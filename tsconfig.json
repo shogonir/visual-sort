@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "target": "es2015",
+    "module": "es2015",
+    "lib": [
+      "DOM",
+      "ES2017"
+    ]
+  }
+}
