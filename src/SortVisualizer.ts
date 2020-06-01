@@ -1,17 +1,48 @@
+import BubbleSort from "./sort/BubbleSort";
+import TimeUtil from "./TimeUtil";
+
 const MaxRadius: number = 0.9
-const MinRadius: number = 0.8
+const MinRadius: number = 0.5
 
 export default class SortVisualizer {
 
-  public static readonly DefaultLength: number = 500;
+  public static readonly DefaultLength: number = 100;
 
   numbers: number[]
+  numbersLength: number
 
   canvas: HTMLCanvasElement
   context: CanvasRenderingContext2D
 
+  swap: (index1: number, index2: number) => Promise<void>
+  referArray: (index: number) => number
+
   constructor() {
     this.numbers = new Array(SortVisualizer.DefaultLength)
+    this.numbersLength = this.numbers.length
+
+    this.swap = async (index1: number, index2: number): Promise<void> => {
+      if (index1 < 0 || index1 >= this.numbersLength) {
+        throw new Error(`ERROR: index out of bounds. index '${index1}' accessed to array(${this.numbersLength})`)
+      }
+      if (index2 < 0 || index2 >= this.numbersLength) {
+        throw new Error(`ERROR: index out of bounds. index '${index2}' accessed to array(${this.numbersLength})`)
+      }
+      const swap = this.numbers[index1]
+      this.numbers[index1] = this.numbers[index2]
+      this.numbers[index2] = swap
+
+      console.log('swap')
+      await this.drawNumbers()
+    }
+
+    this.referArray = (index: number): number => {
+      if (index < 0 || index >= this.numbersLength) {
+        throw new Error(`ERROR: index out of bounds. index '${index}' accessed to array(${this.numbersLength})`)
+      }
+      return this.numbers[index]
+    }
+
     this.initializeNumbers()
     this.initializeCanvas()
   }
@@ -31,40 +62,49 @@ export default class SortVisualizer {
   }
 
   private initializeNumbers() {
-    const numbersLength = this.numbers.length
-    for (let index = 0; index < numbersLength; index ++) {
+    for (let index = 0; index < this.numbersLength; index ++) {
       this.numbers[index] = index + 1
     }
   }
 
-  shuffleNumbers() {
-    const numbersLength = this.numbers.length
-    for (let index = 0; index < numbersLength; index++) {
-      const index1 = Math.floor(Math.random() * numbersLength)
-      const index2 = Math.floor(Math.random() * numbersLength)
+  async shuffleNumbers() {
+    for (let index = 0; index < this.numbersLength; index++) {
+      const index1 = Math.floor(Math.random() * this.numbersLength)
+      const index2 = Math.floor(Math.random() * this.numbersLength)
       
       const swap = this.numbers[index1]
       this.numbers[index1] = this.numbers[index2]
       this.numbers[index2] = swap
     }
 
-    this.drawNumbers()
-    console.log(this.numbers)
+    await this.drawNumbers()
+    console.log('shuffled')
+    console.log(`n: ${this.numbersLength}`)
+    console.log(`  n ^ 2      : ${this.numbersLength ** 2}`)
+    console.log(`  n * log(n) : ${this.numbersLength * Math.log2(this.numbersLength)}`)
   }
 
-  private drawNumbers() {
+  clearCanvas() {
+    this.context.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight)
+    this.context.rect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight)
+    this.context.fillStyle = '#000000'
+    this.context.fill()
+  }
+
+  private async drawNumbers() {
     const width = this.canvas.clientWidth
     const height = this.canvas.clientHeight
     const centerX = width / 2
     const centerY = height / 2
     const maxRadius = Math.min(width, height) / 2
-    const numbersLength = this.numbers.length
-    console.log(width, height, centerX, centerY, maxRadius)
+
+    this.clearCanvas()
+    this.context.strokeStyle = '#FFFFFF'
 
     this.context.beginPath()
-    for (let index = 0; index < numbersLength; index++) {
-      const radian = (index / numbersLength * 2 * Math.PI) - Math.PI / 2
-      const radiusRatio = (MinRadius + (MaxRadius - MinRadius) * (this.numbers[index] / numbersLength))
+    for (let index = 0; index < this.numbersLength; index++) {
+      const radian = (index / this.numbersLength * 2 * Math.PI) - Math.PI / 2
+      const radiusRatio = (MinRadius + (MaxRadius - MinRadius) * (this.numbers[index] / this.numbersLength))
       const x = centerX + maxRadius * radiusRatio * Math.cos(radian)
       const y = centerY + maxRadius * radiusRatio * Math.sin(radian)
 
@@ -75,5 +115,14 @@ export default class SortVisualizer {
       this.context.lineTo(x, y)
     }
     this.context.stroke()
+    await TimeUtil.sleep(5);
+  }
+
+  async bubbleSort() {
+    const bubbleSort = new BubbleSort()
+    bubbleSort.initialize(this.swap, this.referArray)
+    await bubbleSort.sort(this.numbers)
+    await this.drawNumbers()
+    console.log('bubble sorted')
   }
 }

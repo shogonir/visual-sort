@@ -2,8 +2,8 @@
   "compilerOptions": {
     "sourceMap": true,
     "strictNullChecks": true,
-    "target": "es2015",
-    "module": "es2015",
+    "target": "es2017",
+    "module": "esnext",
     "lib": [
       "DOM",
       "ES2017"

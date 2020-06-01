@@ -1,4 +1,7 @@
 import SortVisualizer from './SortVisualizer'
 
-const sortVisualizer = new SortVisualizer()
-sortVisualizer.shuffleNumbers()
+(async () => {
+  const sortVisualizer = new SortVisualizer()
+  await sortVisualizer.shuffleNumbers()
+  await sortVisualizer.bubbleSort()
+})()
