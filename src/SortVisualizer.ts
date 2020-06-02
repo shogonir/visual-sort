@@ -7,7 +7,7 @@ const MinRadius: number = 0.5
 
 export default class SortVisualizer {
 
-  public static readonly DefaultLength: number = 5000;
+  public static readonly DefaultLength: number = 2000;
 
   numbers: number[]
   numbersLength: number

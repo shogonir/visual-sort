@@ -62,6 +62,7 @@ export default class QuickSort implements Sort {
       console.log(`QuickSort.selectMedian() uncorrect numbers length: ${numbersLength}`)
       return 0
     }
-    return numbers.sort()[Math.floor(numbersLength / 2)]
+    numbers.sort((a: number, b: number) => a - b)
+    return numbers[Math.floor(numbersLength / 2)]
   }
 }
