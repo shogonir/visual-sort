@@ -1,12 +1,13 @@
 import BubbleSort from "./sort/BubbleSort";
 import TimeUtil from "./TimeUtil";
+import QuickSort from "./sort/QuickSort";
 
 const MaxRadius: number = 0.9
 const MinRadius: number = 0.5
 
 export default class SortVisualizer {
 
-  public static readonly DefaultLength: number = 100;
+  public static readonly DefaultLength: number = 5000;
 
   numbers: number[]
   numbersLength: number
@@ -23,10 +24,10 @@ export default class SortVisualizer {
 
     this.swap = async (index1: number, index2: number): Promise<void> => {
       if (index1 < 0 || index1 >= this.numbersLength) {
-        throw new Error(`ERROR: index out of bounds. index '${index1}' accessed to array(${this.numbersLength})`)
+        throw new Error(`ERROR: swap(): index out of bounds. index1 '${index1}' accessed to array(${this.numbersLength})`)
       }
       if (index2 < 0 || index2 >= this.numbersLength) {
-        throw new Error(`ERROR: index out of bounds. index '${index2}' accessed to array(${this.numbersLength})`)
+        throw new Error(`ERROR: swap(): index out of bounds. index2 '${index2}' accessed to array(${this.numbersLength})`)
       }
       const swap = this.numbers[index1]
       this.numbers[index1] = this.numbers[index2]
@@ -38,7 +39,7 @@ export default class SortVisualizer {
 
     this.referArray = (index: number): number => {
       if (index < 0 || index >= this.numbersLength) {
-        throw new Error(`ERROR: index out of bounds. index '${index}' accessed to array(${this.numbersLength})`)
+        throw new Error(`ERROR: referArray(): index out of bounds. index '${index}' accessed to array(${this.numbersLength})`)
       }
       return this.numbers[index]
     }
@@ -115,7 +116,7 @@ export default class SortVisualizer {
       this.context.lineTo(x, y)
     }
     this.context.stroke()
-    await TimeUtil.sleep(5);
+    await TimeUtil.sleep(2);
   }
 
   async bubbleSort() {
@@ -124,5 +125,13 @@ export default class SortVisualizer {
     await bubbleSort.sort(this.numbers)
     await this.drawNumbers()
     console.log('bubble sorted')
+  }
+
+  async quickSort() {
+    const quickSort = new QuickSort()
+    quickSort.initialize(this.swap, this.referArray)
+    await quickSort.sort(this.numbers)
+    await this.drawNumbers()
+    console.log('quick sorted')
   }
 }
