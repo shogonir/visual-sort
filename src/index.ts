@@ -9,7 +9,7 @@ if (startButton) {
     (async () => {
       const sortVisualizer = new SortVisualizer()
       await sortVisualizer.shuffleNumbers()
-      await sortVisualizer.quickSort()
+      await sortVisualizer.heapSort()
     })()    
   })
 }

@@ -1,13 +1,14 @@
 import BubbleSort from "./sort/BubbleSort";
 import TimeUtil from "./TimeUtil";
 import QuickSort from "./sort/QuickSort";
+import HeapSort from "./sort/HeapSort";
 
 const MaxRadius: number = 0.9
 const MinRadius: number = 0.5
 
 export default class SortVisualizer {
 
-  public static readonly DefaultLength: number = 2000;
+  public static readonly DefaultLength: number = 500;
 
   numbers: number[]
   numbersLength: number
@@ -15,12 +16,15 @@ export default class SortVisualizer {
   canvas: HTMLCanvasElement
   context: CanvasRenderingContext2D
 
+  swapCount: number
+
   swap: (index1: number, index2: number) => Promise<void>
   referArray: (index: number) => number
 
   constructor() {
     this.numbers = new Array(SortVisualizer.DefaultLength)
     this.numbersLength = this.numbers.length
+    this.swapCount = 0
 
     this.swap = async (index1: number, index2: number): Promise<void> => {
       if (index1 < 0 || index1 >= this.numbersLength) {
@@ -32,8 +36,7 @@ export default class SortVisualizer {
       const swap = this.numbers[index1]
       this.numbers[index1] = this.numbers[index2]
       this.numbers[index2] = swap
-
-      console.log('swap')
+      this.swapCount++
       await this.drawNumbers()
     }
 
@@ -125,6 +128,8 @@ export default class SortVisualizer {
     await bubbleSort.sort(this.numbers)
     await this.drawNumbers()
     console.log('bubble sorted')
+    console.log(this.swapCount, ' swap')
+    this.swapCount  = 0
   }
 
   async quickSort() {
@@ -133,5 +138,17 @@ export default class SortVisualizer {
     await quickSort.sort(this.numbers)
     await this.drawNumbers()
     console.log('quick sorted')
+    console.log(this.swapCount, ' swap')
+    this.swapCount  = 0
+  }
+
+  async heapSort() {
+    const heapSort = new HeapSort()
+    heapSort.initialize(this.swap, this.referArray)
+    await heapSort.sort(this.numbers)
+    await this.drawNumbers()
+    console.log('heap sorted')
+    console.log(this.swapCount, ' swap')
+    this.swapCount  = 0
   }
 }
