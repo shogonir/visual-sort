@@ -2,19 +2,19 @@ import Sort from './Sort'
 
 export default class QuickSort implements Sort {
 
-  swap: (index1: number, index2: number) => void
-  referArray: (index: number) => number
+  swap: (index1: number, index2: number) => Promise<void>
+  referArray: (index: number) => Promise<number>
 
   initialize(
-    swap: (index1: number, index2: number) => void,
-    referArray: (index: number) => number,
+    swap: (index1: number, index2: number) => Promise<void>,
+    referArray: (index: number) => Promise<number>,
   ) {
     this.swap = swap
     this.referArray = referArray
   }
 
   async sort(numbers: number[]): Promise<void> {
-    this.sortRecurse(numbers, 0, numbers.length - 1)
+    await this.sortRecurse(numbers, 0, numbers.length - 1)
   }
 
   private async sortRecurse(numbers: number[], indexMin: number, indexMax: number): Promise<void> {
@@ -25,16 +25,16 @@ export default class QuickSort implements Sort {
     let leftIndex = indexMin
     let rightIndex = indexMax
     while (leftIndex < rightIndex) {
-      while (this.referArray(leftIndex) < pivot && leftIndex < indexMax) {
+      while (await this.referArray(leftIndex) < pivot && leftIndex < indexMax) {
         leftIndex++
       }
-      while (this.referArray(rightIndex) > pivot && rightIndex > indexMin) {
+      while (await this.referArray(rightIndex) > pivot && rightIndex > indexMin) {
         rightIndex--
       }
       if (leftIndex >= rightIndex) {
         break
       }
-      if (this.referArray(leftIndex) > this.referArray(rightIndex)) {
+      if (await this.referArray(leftIndex) > await this.referArray(rightIndex)) {
         await this.swap(leftIndex, rightIndex)
       }
     }

@@ -8,8 +8,6 @@ const MinRadius: number = 0.5
 
 export default class SortVisualizer {
 
-  public static readonly DefaultLength: number = 500;
-
   numbers: number[]
   numbersLength: number
 
@@ -19,11 +17,10 @@ export default class SortVisualizer {
   swapCount: number
 
   swap: (index1: number, index2: number) => Promise<void>
-  referArray: (index: number) => number
+  referArray: (index: number) => Promise<number>
 
   constructor() {
-    this.numbers = new Array(SortVisualizer.DefaultLength)
-    this.numbersLength = this.numbers.length
+    this.initializeCanvas()
     this.swapCount = 0
 
     this.swap = async (index1: number, index2: number): Promise<void> => {
@@ -40,15 +37,12 @@ export default class SortVisualizer {
       await this.drawNumbers()
     }
 
-    this.referArray = (index: number): number => {
+    this.referArray = async (index: number): Promise<number> => {
       if (index < 0 || index >= this.numbersLength) {
         throw new Error(`ERROR: referArray(): index out of bounds. index '${index}' accessed to array(${this.numbersLength})`)
       }
       return this.numbers[index]
     }
-
-    this.initializeNumbers()
-    this.initializeCanvas()
   }
 
   private initializeCanvas() {
@@ -65,27 +59,24 @@ export default class SortVisualizer {
     this.context = context
   }
 
-  private initializeNumbers() {
-    for (let index = 0; index < this.numbersLength; index ++) {
+  async initializeNumbers(numbersLength: number): Promise<void> {
+    this.numbers = new Array(numbersLength)
+    this.numbersLength = numbersLength
+    for (let index = 0; index < numbersLength; index ++) {
       this.numbers[index] = index + 1
     }
+    await this.drawNumbers()
   }
 
-  async shuffleNumbers() {
+  async shuffleNumbers(): Promise<void> {
     for (let index = 0; index < this.numbersLength; index++) {
       const index1 = Math.floor(Math.random() * this.numbersLength)
       const index2 = Math.floor(Math.random() * this.numbersLength)
       
-      const swap = this.numbers[index1]
-      this.numbers[index1] = this.numbers[index2]
-      this.numbers[index2] = swap
+      await this.swap(index1, index2)
     }
 
     await this.drawNumbers()
-    console.log('shuffled')
-    console.log(`n: ${this.numbersLength}`)
-    console.log(`  n ^ 2      : ${this.numbersLength ** 2}`)
-    console.log(`  n * log(n) : ${this.numbersLength * Math.log2(this.numbersLength)}`)
   }
 
   clearCanvas() {
@@ -95,7 +86,7 @@ export default class SortVisualizer {
     this.context.fill()
   }
 
-  private async drawNumbers() {
+  private async drawNumbers(): Promise<void> {
     const width = this.canvas.clientWidth
     const height = this.canvas.clientHeight
     const centerX = width / 2
@@ -119,36 +110,30 @@ export default class SortVisualizer {
       this.context.lineTo(x, y)
     }
     this.context.stroke()
-    await TimeUtil.sleep(2);
+    await TimeUtil.sleep(1);
   }
 
-  async bubbleSort() {
+  async bubbleSort(): Promise<void> {
     const bubbleSort = new BubbleSort()
     bubbleSort.initialize(this.swap, this.referArray)
     await bubbleSort.sort(this.numbers)
     await this.drawNumbers()
-    console.log('bubble sorted')
-    console.log(this.swapCount, ' swap')
     this.swapCount  = 0
   }
 
-  async quickSort() {
+  async quickSort(): Promise<void> {
     const quickSort = new QuickSort()
     quickSort.initialize(this.swap, this.referArray)
     await quickSort.sort(this.numbers)
     await this.drawNumbers()
-    console.log('quick sorted')
-    console.log(this.swapCount, ' swap')
     this.swapCount  = 0
   }
 
-  async heapSort() {
+  async heapSort(): Promise<void> {
     const heapSort = new HeapSort()
     heapSort.initialize(this.swap, this.referArray)
     await heapSort.sort(this.numbers)
     await this.drawNumbers()
-    console.log('heap sorted')
-    console.log(this.swapCount, ' swap')
     this.swapCount  = 0
   }
 }

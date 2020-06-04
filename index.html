@@ -6,7 +6,18 @@
   </head>
   <body>
     <canvas id="canvas" width="512" height="512"></canvas>
-    <button id="start">start</button>
+    <br/>
+    <button id="shuffle">Shuffle!</button>
+    <select name="order">
+      <option value="slower" selected>O(n^2)</option>
+      <option value="quicker">O(nlogn)</option>
+    </select>
+    <select name="algorithm">
+      <option value="bubble" selected>Bubble</option>
+      <option value="quick">Quick</option>
+      <option value="heap">Heap</option>
+    </select>
+    <button id="sort">Sort!</button>
     <script src="dist/main.js"></script>
   </body>
 </html>
