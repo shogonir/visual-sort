@@ -2,6 +2,7 @@ import BubbleSort from "./sort/BubbleSort";
 import TimeUtil from "./TimeUtil";
 import QuickSort from "./sort/QuickSort";
 import HeapSort from "./sort/HeapSort";
+import InsertionSort from "./sort/InsertionSort";
 
 const MaxRadius: number = 0.9
 const MinRadius: number = 0.5
@@ -16,12 +17,35 @@ export default class SortVisualizer {
 
   swapCount: number
 
-  swap: (index1: number, index2: number) => Promise<void>
   referArray: (index: number) => Promise<number>
+  shift: (from: number, to: number) => Promise<void>
+  swap: (index1: number, index2: number) => Promise<void>
 
   constructor() {
     this.initializeCanvas()
     this.swapCount = 0
+
+    this.referArray = async (index: number): Promise<number> => {
+      if (index < 0 || index >= this.numbersLength) {
+        throw new Error(`ERROR: referArray(): index out of bounds. index '${index}' accessed to array(${this.numbersLength})`)
+      }
+      return this.numbers[index]
+    }
+
+    this.shift = async (from: number, to: number): Promise<void> => {
+      if (from === to || from < 0 || from >= this.numbersLength || to < 0 || to >= this.numbersLength) {
+        return
+      }
+      const direction = (from < to) ? 1 : -1;
+      const condition = (from < to) ? ((index: number) => index < to) : ((index: number) => index > to);
+      const tmp = this.numbers[from];
+      for (let index = from; condition(index); index += direction) {
+        this.numbers[index] = this.numbers[index + direction]
+        await this.drawNumbers()
+      }
+      this.numbers[to] = tmp
+      await this.drawNumbers()
+    }
 
     this.swap = async (index1: number, index2: number): Promise<void> => {
       if (index1 < 0 || index1 >= this.numbersLength) {
@@ -35,13 +59,6 @@ export default class SortVisualizer {
       this.numbers[index2] = swap
       this.swapCount++
       await this.drawNumbers()
-    }
-
-    this.referArray = async (index: number): Promise<number> => {
-      if (index < 0 || index >= this.numbersLength) {
-        throw new Error(`ERROR: referArray(): index out of bounds. index '${index}' accessed to array(${this.numbersLength})`)
-      }
-      return this.numbers[index]
     }
   }
 
@@ -115,25 +132,33 @@ export default class SortVisualizer {
 
   async bubbleSort(): Promise<void> {
     const bubbleSort = new BubbleSort()
-    bubbleSort.initialize(this.swap, this.referArray)
+    bubbleSort.initialize(this.referArray, this.shift, this.swap)
     await bubbleSort.sort(this.numbers)
     await this.drawNumbers()
-    this.swapCount  = 0
+    this.swapCount = 0
   }
 
-  async quickSort(): Promise<void> {
-    const quickSort = new QuickSort()
-    quickSort.initialize(this.swap, this.referArray)
-    await quickSort.sort(this.numbers)
+  async insertionSort(): Promise<void> {
+    const insertionSort = new InsertionSort()
+    insertionSort.initialize(this.referArray, this.shift, this.swap)
+    await insertionSort.sort(this.numbers)
     await this.drawNumbers()
-    this.swapCount  = 0
+    this.swapCount = 0
   }
 
   async heapSort(): Promise<void> {
     const heapSort = new HeapSort()
-    heapSort.initialize(this.swap, this.referArray)
+    heapSort.initialize(this.referArray, this.shift, this.swap)
     await heapSort.sort(this.numbers)
     await this.drawNumbers()
-    this.swapCount  = 0
+    this.swapCount = 0
+  }
+
+  async quickSort(): Promise<void> {
+    const quickSort = new QuickSort()
+    quickSort.initialize(this.referArray, this.shift, this.swap)
+    await quickSort.sort(this.numbers)
+    await this.drawNumbers()
+    this.swapCount = 0
   }
 }

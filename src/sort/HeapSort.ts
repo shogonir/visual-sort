@@ -2,17 +2,20 @@ import Sort from './Sort'
 
 export default class HeapSort implements Sort {
 
-  swap: (index1: number, index2: number) => Promise<void>
   referArray: (index: number) => Promise<number>
+  shift: (from: number, to: number) => Promise<void>
+  swap: (index1: number, index2: number) => Promise<void>
 
   heapSize: number
 
   initialize(
-    swap: (index1: number, index2: number) => Promise<void>,
     referArray: (index: number) => Promise<number>,
+    shift: (from: number, to: number) => Promise<void>,
+    swap: (index1: number, index2: number) => Promise<void>,
   ) {
-    this.swap = swap
     this.referArray = referArray
+    this.shift = shift
+    this.swap = swap
     this.heapSize = 0
   }
 

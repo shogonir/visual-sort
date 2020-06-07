@@ -2,15 +2,18 @@ import Sort from './Sort'
 
 export default class QuickSort implements Sort {
 
-  swap: (index1: number, index2: number) => Promise<void>
   referArray: (index: number) => Promise<number>
+  shift: (from: number, to: number) => Promise<void>
+  swap: (index1: number, index2: number) => Promise<void>
 
   initialize(
-    swap: (index1: number, index2: number) => Promise<void>,
     referArray: (index: number) => Promise<number>,
+    shift: (from: number, to: number) => Promise<void>,
+    swap: (index1: number, index2: number) => Promise<void>,
   ) {
-    this.swap = swap
     this.referArray = referArray
+    this.shift = shift
+    this.swap = swap
   }
 
   async sort(numbers: number[]): Promise<void> {

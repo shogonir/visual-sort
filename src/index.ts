@@ -12,8 +12,9 @@ const SlowerLength = 50;
   const algorithmSelect = document.querySelector("select[name='algorithm']") as HTMLSelectElement;
 
   const bubbleSortOption = document.querySelector("option[value='bubble']") as HTMLOptionElement;
-  const quickSortOption = document.querySelector("option[value='quick']") as HTMLOptionElement;
+  const insertionSortOption = document.querySelector("option[value='insertion']") as HTMLOptionElement;
   const heapSortOption = document.querySelector("option[value='heap']") as HTMLOptionElement;
+  const quickSortOption = document.querySelector("option[value='quick']") as HTMLOptionElement;
 
   if (!shuffleButton || !orderSelect || !sortButton || !algorithmSelect || !bubbleSortOption || !quickSortOption || !heapSortOption) {
     return;  
@@ -33,24 +34,28 @@ const SlowerLength = 50;
     sortButton.disabled = false
   }
 
-  const quick = async () => {
-    await sortVisualizer.initializeNumbers(QuickerLength)
-
-    bubbleSortOption.disabled = true
-    quickSortOption.disabled = false
-    heapSortOption.disabled = false
-    
-    quickSortOption.selected = true
-  }
-
   const slow = async () => {
     await sortVisualizer.initializeNumbers(SlowerLength)
 
     bubbleSortOption.disabled = false
-    quickSortOption.disabled = true
+    insertionSortOption.disabled = false
+
     heapSortOption.disabled = true
+    quickSortOption.disabled = true    
 
     bubbleSortOption.selected = true
+  }
+
+  const quick = async () => {
+    await sortVisualizer.initializeNumbers(QuickerLength)
+
+    bubbleSortOption.disabled = true
+    insertionSortOption.disabled = true
+
+    heapSortOption.disabled = false
+    quickSortOption.disabled = false
+    
+    heapSortOption.selected = true
   }
 
   const shuffle = async () => {
@@ -85,11 +90,14 @@ const SlowerLength = 50;
       case 'bubble':
         await sortVisualizer.bubbleSort()
         break
-      case 'quick':
-        await sortVisualizer.quickSort()
+      case 'insertion':
+        await sortVisualizer.insertionSort()
         break
       case 'heap':
         await sortVisualizer.heapSort()
+        break
+      case 'quick':
+        await sortVisualizer.quickSort()
         break
     }
     enable()
