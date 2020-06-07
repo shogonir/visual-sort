@@ -21,14 +21,19 @@ export default class SortVisualizer {
   shift: (from: number, to: number) => Promise<void>
   swap: (index1: number, index2: number) => Promise<void>
 
+  referedIndex: number
+
   constructor() {
     this.initializeCanvas()
     this.swapCount = 0
+
+    this.referedIndex = -1
 
     this.referArray = async (index: number): Promise<number> => {
       if (index < 0 || index >= this.numbersLength) {
         throw new Error(`ERROR: referArray(): index out of bounds. index '${index}' accessed to array(${this.numbersLength})`)
       }
+      this.referedIndex = index
       return this.numbers[index]
     }
 
@@ -99,7 +104,7 @@ export default class SortVisualizer {
   clearCanvas() {
     this.context.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight)
     this.context.rect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight)
-    this.context.fillStyle = '#000000'
+    this.context.fillStyle = '#222222'
     this.context.fill()
   }
 
@@ -127,13 +132,32 @@ export default class SortVisualizer {
       this.context.lineTo(x, y)
     }
     this.context.stroke()
+
+    if (this.referedIndex !== -1) {
+      this.context.beginPath()
+      this.context.strokeStyle = '#00FFFF'
+      this.context.moveTo(centerX, centerY);
+      const radian = this.referedIndex / this.numbersLength * 2 * Math.PI - Math.PI / 2;
+      this.context.lineTo(
+        centerX + maxRadius * Math.cos(radian),
+        centerY + maxRadius * Math.sin(radian)
+      )
+      this.context.stroke()
+      this.referedIndex = -1
+    }
+
     await TimeUtil.sleep(1);
+  }
+
+  private resetEffect() {
+    this.referedIndex = -1
   }
 
   async bubbleSort(): Promise<void> {
     const bubbleSort = new BubbleSort()
     bubbleSort.initialize(this.referArray, this.shift, this.swap)
     await bubbleSort.sort(this.numbers)
+    this.resetEffect()
     await this.drawNumbers()
     this.swapCount = 0
   }
@@ -142,6 +166,7 @@ export default class SortVisualizer {
     const insertionSort = new InsertionSort()
     insertionSort.initialize(this.referArray, this.shift, this.swap)
     await insertionSort.sort(this.numbers)
+    this.resetEffect()
     await this.drawNumbers()
     this.swapCount = 0
   }
@@ -150,6 +175,7 @@ export default class SortVisualizer {
     const heapSort = new HeapSort()
     heapSort.initialize(this.referArray, this.shift, this.swap)
     await heapSort.sort(this.numbers)
+    this.resetEffect()
     await this.drawNumbers()
     this.swapCount = 0
   }
@@ -158,6 +184,7 @@ export default class SortVisualizer {
     const quickSort = new QuickSort()
     quickSort.initialize(this.referArray, this.shift, this.swap)
     await quickSort.sort(this.numbers)
+    this.resetEffect()
     await this.drawNumbers()
     this.swapCount = 0
   }
