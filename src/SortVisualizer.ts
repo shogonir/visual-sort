@@ -21,19 +21,21 @@ export default class SortVisualizer {
   shift: (from: number, to: number) => Promise<void>
   swap: (index1: number, index2: number) => Promise<void>
 
-  referedIndex: number
+  centerText: string
+  referedIndices: number[]
 
   constructor() {
     this.initializeCanvas()
     this.swapCount = 0
 
-    this.referedIndex = -1
+    this.centerText = ''
+    this.referedIndices = []
 
     this.referArray = async (index: number): Promise<number> => {
       if (index < 0 || index >= this.numbersLength) {
         throw new Error(`ERROR: referArray(): index out of bounds. index '${index}' accessed to array(${this.numbersLength})`)
       }
-      this.referedIndex = index
+      this.referedIndices.push(index)
       return this.numbers[index]
     }
 
@@ -91,6 +93,7 @@ export default class SortVisualizer {
   }
 
   async shuffleNumbers(): Promise<void> {
+    this.centerText = 'shuffle()'
     for (let index = 0; index < this.numbersLength; index++) {
       const index1 = Math.floor(Math.random() * this.numbersLength)
       const index2 = Math.floor(Math.random() * this.numbersLength)
@@ -98,6 +101,7 @@ export default class SortVisualizer {
       await this.swap(index1, index2)
     }
 
+    this.centerText = ''
     await this.drawNumbers()
   }
 
@@ -116,8 +120,34 @@ export default class SortVisualizer {
     const maxRadius = Math.min(width, height) / 2
 
     this.clearCanvas()
-    this.context.strokeStyle = '#FFFFFF'
 
+    // grid
+    this.context.strokeStyle = '#303030'
+    this.context.beginPath()
+    this.context.arc(centerX, centerY, maxRadius * MinRadius, 0, 2 * Math.PI, false)
+    this.context.stroke()
+    this.context.beginPath()
+    this.context.arc(centerX, centerY, maxRadius * (MaxRadius + MinRadius) / 2, 0, 2 * Math.PI, false)
+    this.context.stroke()
+    this.context.beginPath()
+    this.context.arc(centerX, centerY, maxRadius * MaxRadius, 0, 2 * Math.PI, false)
+    this.context.stroke()
+    for (let index = 0; index < 12; index++) {
+      const radian = index / 12 * 2 * Math.PI;
+      this.context.beginPath()
+      this.context.moveTo(
+        centerX + maxRadius * MinRadius * Math.cos(radian),
+        centerY + maxRadius * MinRadius * Math.sin(radian)
+      )
+      this.context.lineTo(
+        centerX + maxRadius * MaxRadius * Math.cos(radian),
+        centerY + maxRadius * MaxRadius * Math.sin(radian)
+      )
+      this.context.stroke()
+    }
+    
+    // numbers
+    this.context.strokeStyle = '#FFFFFF'
     this.context.beginPath()
     for (let index = 0; index < this.numbersLength; index++) {
       const radian = (index / this.numbersLength * 2 * Math.PI) - Math.PI / 2
@@ -133,27 +163,39 @@ export default class SortVisualizer {
     }
     this.context.stroke()
 
-    if (this.referedIndex !== -1) {
-      this.context.beginPath()
-      this.context.strokeStyle = '#00FFFF'
-      this.context.moveTo(centerX, centerY);
-      const radian = this.referedIndex / this.numbersLength * 2 * Math.PI - Math.PI / 2;
-      this.context.lineTo(
-        centerX + maxRadius * Math.cos(radian),
-        centerY + maxRadius * Math.sin(radian)
-      )
-      this.context.stroke()
-      this.referedIndex = -1
+    // refer array
+    if (this.referedIndices.length > 0) {
+      for (const index of this.referedIndices) {
+        this.context.beginPath()
+        this.context.strokeStyle = '#00FFFF'
+        this.context.moveTo(centerX, centerY);
+        const radian = index / this.numbersLength * 2 * Math.PI - Math.PI / 2;
+        const radiusRatio = (MinRadius + (MaxRadius - MinRadius) * (this.numbers[index] / this.numbersLength))
+        this.context.lineTo(
+          centerX + maxRadius * radiusRatio * Math.cos(radian),
+          centerY + maxRadius * radiusRatio * Math.sin(radian)
+        )
+        this.context.stroke()
+      }
+      this.referedIndices = []
     }
+
+    // center text
+    this.context.fillStyle = '#FFFFFF'
+    this.context.font = '20px monospace'
+    this.context.textAlign = 'center'
+    this.context.fillText(this.centerText, centerX, centerY)
 
     await TimeUtil.sleep(1);
   }
 
   private resetEffect() {
-    this.referedIndex = -1
+    this.centerText = ''
+    this.referedIndices = []
   }
 
   async bubbleSort(): Promise<void> {
+    this.centerText = 'bubble_sort()'
     const bubbleSort = new BubbleSort()
     bubbleSort.initialize(this.referArray, this.shift, this.swap)
     await bubbleSort.sort(this.numbers)
@@ -163,6 +205,7 @@ export default class SortVisualizer {
   }
 
   async insertionSort(): Promise<void> {
+    this.centerText = 'insertion_sort()'
     const insertionSort = new InsertionSort()
     insertionSort.initialize(this.referArray, this.shift, this.swap)
     await insertionSort.sort(this.numbers)
@@ -172,6 +215,7 @@ export default class SortVisualizer {
   }
 
   async heapSort(): Promise<void> {
+    this.centerText = 'heap_sort()'
     const heapSort = new HeapSort()
     heapSort.initialize(this.referArray, this.shift, this.swap)
     await heapSort.sort(this.numbers)
@@ -181,6 +225,7 @@ export default class SortVisualizer {
   }
 
   async quickSort(): Promise<void> {
+    this.centerText = 'quick_sort()'
     const quickSort = new QuickSort()
     quickSort.initialize(this.referArray, this.shift, this.swap)
     await quickSort.sort(this.numbers)
