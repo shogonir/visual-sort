@@ -1,7 +1,7 @@
 import SortVisualizer from './SortVisualizer'
 
 const QuickerLength = 500;
-const SlowerLength = 50;
+const SlowerLength = 100;
 
 (async () => {
   const sortVisualizer = new SortVisualizer();
@@ -13,6 +13,7 @@ const SlowerLength = 50;
 
   const bubbleSortOption = document.querySelector("option[value='bubble']") as HTMLOptionElement;
   const insertionSortOption = document.querySelector("option[value='insertion']") as HTMLOptionElement;
+  const selectionSortOption = document.querySelector("option[value='selection']") as HTMLOptionElement;
   const heapSortOption = document.querySelector("option[value='heap']") as HTMLOptionElement;
   const quickSortOption = document.querySelector("option[value='quick']") as HTMLOptionElement;
 
@@ -39,6 +40,7 @@ const SlowerLength = 50;
 
     bubbleSortOption.disabled = false
     insertionSortOption.disabled = false
+    selectionSortOption.disabled = false
 
     heapSortOption.disabled = true
     quickSortOption.disabled = true    
@@ -51,6 +53,7 @@ const SlowerLength = 50;
 
     bubbleSortOption.disabled = true
     insertionSortOption.disabled = true
+    selectionSortOption.disabled = true
 
     heapSortOption.disabled = false
     quickSortOption.disabled = false
@@ -92,6 +95,9 @@ const SlowerLength = 50;
         break
       case 'insertion':
         await sortVisualizer.insertionSort()
+        break
+      case 'selection':
+        await sortVisualizer.selectionSort()
         break
       case 'heap':
         await sortVisualizer.heapSort()

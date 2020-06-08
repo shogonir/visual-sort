@@ -3,6 +3,7 @@ import TimeUtil from "./TimeUtil";
 import QuickSort from "./sort/QuickSort";
 import HeapSort from "./sort/HeapSort";
 import InsertionSort from "./sort/InsertionSort";
+import SelectionSort from "./sort/SelectionSort";
 
 const MaxRadius: number = 0.9
 const MinRadius: number = 0.5
@@ -48,7 +49,6 @@ export default class SortVisualizer {
       const tmp = this.numbers[from];
       for (let index = from; condition(index); index += direction) {
         this.numbers[index] = this.numbers[index + direction]
-        await this.drawNumbers()
       }
       this.numbers[to] = tmp
       await this.drawNumbers()
@@ -165,9 +165,9 @@ export default class SortVisualizer {
 
     // refer array
     if (this.referedIndices.length > 0) {
+      this.context.beginPath()
+      this.context.strokeStyle = '#00FFFF'
       for (const index of this.referedIndices) {
-        this.context.beginPath()
-        this.context.strokeStyle = '#00FFFF'
         this.context.moveTo(centerX, centerY);
         const radian = index / this.numbersLength * 2 * Math.PI - Math.PI / 2;
         const radiusRatio = (MinRadius + (MaxRadius - MinRadius) * (this.numbers[index] / this.numbersLength))
@@ -175,8 +175,8 @@ export default class SortVisualizer {
           centerX + maxRadius * radiusRatio * Math.cos(radian),
           centerY + maxRadius * radiusRatio * Math.sin(radian)
         )
-        this.context.stroke()
       }
+      this.context.stroke()
       this.referedIndices = []
     }
 
@@ -209,6 +209,16 @@ export default class SortVisualizer {
     const insertionSort = new InsertionSort()
     insertionSort.initialize(this.referArray, this.shift, this.swap)
     await insertionSort.sort(this.numbers)
+    this.resetEffect()
+    await this.drawNumbers()
+    this.swapCount = 0
+  }
+
+  async selectionSort(): Promise<void> {
+    this.centerText = 'selection_sort()'
+    const selectionSort = new SelectionSort()
+    selectionSort.initialize(this.referArray, this.shift, this.swap)
+    await selectionSort.sort(this.numbers)
     this.resetEffect()
     await this.drawNumbers()
     this.swapCount = 0
