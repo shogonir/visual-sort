@@ -15,9 +15,20 @@ const SlowerLength = 100;
   const insertionSortOption = document.querySelector("option[value='insertion']") as HTMLOptionElement;
   const selectionSortOption = document.querySelector("option[value='selection']") as HTMLOptionElement;
   const heapSortOption = document.querySelector("option[value='heap']") as HTMLOptionElement;
+  const mergeSortOption = document.querySelector("option[value='merge']") as HTMLOptionElement;
   const quickSortOption = document.querySelector("option[value='quick']") as HTMLOptionElement;
 
-  if (!shuffleButton || !orderSelect || !sortButton || !algorithmSelect || !bubbleSortOption || !quickSortOption || !heapSortOption) {
+  if (!shuffleButton
+    || !orderSelect
+    || !sortButton
+    || !algorithmSelect
+    || !bubbleSortOption
+    || !insertionSortOption
+    || !selectionSortOption
+    || !heapSortOption
+    || !mergeSortOption
+    || !quickSortOption
+  ) {
     return;  
   }
 
@@ -43,6 +54,7 @@ const SlowerLength = 100;
     selectionSortOption.disabled = false
 
     heapSortOption.disabled = true
+    mergeSortOption.disabled = true
     quickSortOption.disabled = true    
 
     bubbleSortOption.selected = true
@@ -56,6 +68,7 @@ const SlowerLength = 100;
     selectionSortOption.disabled = true
 
     heapSortOption.disabled = false
+    mergeSortOption.disabled = false
     quickSortOption.disabled = false
     
     heapSortOption.selected = true
@@ -101,6 +114,9 @@ const SlowerLength = 100;
         break
       case 'heap':
         await sortVisualizer.heapSort()
+        break
+      case 'merge':
+        await sortVisualizer.mergeSort()
         break
       case 'quick':
         await sortVisualizer.quickSort()

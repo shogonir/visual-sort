@@ -4,6 +4,7 @@ import QuickSort from "./sort/QuickSort";
 import HeapSort from "./sort/HeapSort";
 import InsertionSort from "./sort/InsertionSort";
 import SelectionSort from "./sort/SelectionSort";
+import MergeSort from "./sort/MergeSort";
 
 const MaxRadius: number = 0.9
 const MinRadius: number = 0.5
@@ -37,6 +38,7 @@ export default class SortVisualizer {
         throw new Error(`ERROR: referArray(): index out of bounds. index '${index}' accessed to array(${this.numbersLength})`)
       }
       this.referedIndices.push(index)
+      await this.drawNumbers()
       return this.numbers[index]
     }
 
@@ -229,6 +231,16 @@ export default class SortVisualizer {
     const heapSort = new HeapSort()
     heapSort.initialize(this.referArray, this.shift, this.swap)
     await heapSort.sort(this.numbers)
+    this.resetEffect()
+    await this.drawNumbers()
+    this.swapCount = 0
+  }
+
+  async mergeSort(): Promise<void> {
+    this.centerText = 'merge_sort()'
+    const mergeSort = new MergeSort()
+    mergeSort.initialize(this.referArray, this.shift, this.swap)
+    await mergeSort.sort(this.numbers)
     this.resetEffect()
     await this.drawNumbers()
     this.swapCount = 0
