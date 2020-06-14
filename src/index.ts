@@ -81,7 +81,7 @@ const SlowerLength = 100;
   }
 
   await slow()
-  await shuffle();
+  // await shuffle();
 
   shuffleButton.addEventListener('click', async () => {
     disable()

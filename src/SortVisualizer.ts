@@ -17,8 +17,11 @@ export default class SortVisualizer {
   canvas: HTMLCanvasElement
   context: CanvasRenderingContext2D
 
+  alignCount: number
+  referArrayCount: number
   swapCount: number
 
+  align: (element: number, index: number) => Promise<void>
   referArray: (index: number) => Promise<number>
   shift: (from: number, to: number) => Promise<void>
   swap: (index1: number, index2: number) => Promise<void>
@@ -28,16 +31,29 @@ export default class SortVisualizer {
 
   constructor() {
     this.initializeCanvas()
+
+    this.alignCount = 0
+    this.referArrayCount = 0
     this.swapCount = 0
 
     this.centerText = ''
     this.referedIndices = []
+
+    this.align = async (element: number, index: number): Promise<void> => {
+      if (index < 0 || index >= this.numbersLength) {
+        throw new Error(`ERROR: align(): index out of bounds. index '${index}' accessed to array(${this.numbersLength})`)
+      }
+      this.numbers[index] = element
+      this.alignCount++
+      await this.drawNumbers()
+    }
 
     this.referArray = async (index: number): Promise<number> => {
       if (index < 0 || index >= this.numbersLength) {
         throw new Error(`ERROR: referArray(): index out of bounds. index '${index}' accessed to array(${this.numbersLength})`)
       }
       this.referedIndices.push(index)
+      this.referArrayCount++
       await this.drawNumbers()
       return this.numbers[index]
     }
@@ -48,11 +64,11 @@ export default class SortVisualizer {
       }
       const direction = (from < to) ? 1 : -1;
       const condition = (from < to) ? ((index: number) => index < to) : ((index: number) => index > to);
-      const tmp = this.numbers[from];
+      const tmp = await this.referArray(from)
       for (let index = from; condition(index); index += direction) {
-        this.numbers[index] = this.numbers[index + direction]
+        await this.align(await this.referArray(index + direction), index)
       }
-      this.numbers[to] = tmp
+      await this.align(tmp, to);
       await this.drawNumbers()
     }
 
@@ -63,9 +79,9 @@ export default class SortVisualizer {
       if (index2 < 0 || index2 >= this.numbersLength) {
         throw new Error(`ERROR: swap(): index out of bounds. index2 '${index2}' accessed to array(${this.numbersLength})`)
       }
-      const swap = this.numbers[index1]
-      this.numbers[index1] = this.numbers[index2]
-      this.numbers[index2] = swap
+      const swap = await this.referArray(index1)
+      await this.align(await this.referArray(index2), index1)
+      await this.align(swap, index2);
       this.swapCount++
       await this.drawNumbers()
     }
@@ -86,6 +102,7 @@ export default class SortVisualizer {
   }
 
   async initializeNumbers(numbersLength: number): Promise<void> {
+    this.resetCounter()
     this.numbers = new Array(numbersLength)
     this.numbersLength = numbersLength
     for (let index = 0; index < numbersLength; index ++) {
@@ -95,6 +112,7 @@ export default class SortVisualizer {
   }
 
   async shuffleNumbers(): Promise<void> {
+    this.resetCounter()
     this.centerText = 'shuffle()'
     for (let index = 0; index < this.numbersLength; index++) {
       const index1 = Math.floor(Math.random() * this.numbersLength)
@@ -103,7 +121,7 @@ export default class SortVisualizer {
       await this.swap(index1, index2)
     }
 
-    this.centerText = ''
+    this.centerText = 'finish!'
     await this.drawNumbers()
   }
 
@@ -183,23 +201,48 @@ export default class SortVisualizer {
     }
 
     // center text
+    this.context.beginPath()
     this.context.fillStyle = '#FFFFFF'
     this.context.font = '20px monospace'
     this.context.textAlign = 'center'
-    this.context.fillText(this.centerText, centerX, centerY)
+    this.context.fillText(this.centerText, centerX, centerY - 20)
+
+    // status
+    this.context.beginPath()
+    this.context.fillStyle = '#BBBBBB'
+    this.context.font = '15px monospace'
+    this.context.textAlign = 'left'
+    const statusTextLines = [
+      this.numbersLength.toLocaleString().padStart(6, ' ') + ' elements',
+      this.referArrayCount.toLocaleString().padStart(6, ' ') + ' references',
+      this.alignCount.toLocaleString().padStart(6, ' ') + ' aligns',
+      this.swapCount.toLocaleString().padStart(6, ' ') + ' swaps',
+    ];
+    for (const lineNumber in statusTextLines) {
+      const lineNum = parseInt(lineNumber, 10);
+      const line = statusTextLines[lineNumber];
+      this.context.fillText(line, centerX - 64, centerY + 12 + (lineNum * 21))
+    }
 
     await TimeUtil.sleep(1);
   }
 
   private resetEffect() {
-    this.centerText = ''
+    this.centerText = 'finish!'
     this.referedIndices = []
   }
 
+  private resetCounter() {
+    this.alignCount = 0;
+    this.referArrayCount = 0;
+    this.swapCount = 0;
+  }
+
   async bubbleSort(): Promise<void> {
+    this.resetCounter()
     this.centerText = 'bubble_sort()'
     const bubbleSort = new BubbleSort()
-    bubbleSort.initialize(this.referArray, this.shift, this.swap)
+    bubbleSort.initialize(this.align, this.referArray, this.shift, this.swap)
     await bubbleSort.sort(this.numbers)
     this.resetEffect()
     await this.drawNumbers()
@@ -207,9 +250,10 @@ export default class SortVisualizer {
   }
 
   async insertionSort(): Promise<void> {
+    this.resetCounter()
     this.centerText = 'insertion_sort()'
     const insertionSort = new InsertionSort()
-    insertionSort.initialize(this.referArray, this.shift, this.swap)
+    insertionSort.initialize(this.align, this.referArray, this.shift, this.swap)
     await insertionSort.sort(this.numbers)
     this.resetEffect()
     await this.drawNumbers()
@@ -217,9 +261,10 @@ export default class SortVisualizer {
   }
 
   async selectionSort(): Promise<void> {
+    this.resetCounter()
     this.centerText = 'selection_sort()'
     const selectionSort = new SelectionSort()
-    selectionSort.initialize(this.referArray, this.shift, this.swap)
+    selectionSort.initialize(this.align, this.referArray, this.shift, this.swap)
     await selectionSort.sort(this.numbers)
     this.resetEffect()
     await this.drawNumbers()
@@ -227,9 +272,10 @@ export default class SortVisualizer {
   }
 
   async heapSort(): Promise<void> {
+    this.resetCounter()
     this.centerText = 'heap_sort()'
     const heapSort = new HeapSort()
-    heapSort.initialize(this.referArray, this.shift, this.swap)
+    heapSort.initialize(this.align, this.referArray, this.shift, this.swap)
     await heapSort.sort(this.numbers)
     this.resetEffect()
     await this.drawNumbers()
@@ -237,9 +283,10 @@ export default class SortVisualizer {
   }
 
   async mergeSort(): Promise<void> {
+    this.resetCounter()
     this.centerText = 'merge_sort()'
     const mergeSort = new MergeSort()
-    mergeSort.initialize(this.referArray, this.shift, this.swap)
+    mergeSort.initialize(this.align, this.referArray, this.shift, this.swap)
     await mergeSort.sort(this.numbers)
     this.resetEffect()
     await this.drawNumbers()
@@ -247,9 +294,10 @@ export default class SortVisualizer {
   }
 
   async quickSort(): Promise<void> {
+    this.resetCounter()
     this.centerText = 'quick_sort()'
     const quickSort = new QuickSort()
-    quickSort.initialize(this.referArray, this.shift, this.swap)
+    quickSort.initialize(this.align, this.referArray, this.shift, this.swap)
     await quickSort.sort(this.numbers)
     this.resetEffect()
     await this.drawNumbers()

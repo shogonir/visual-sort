@@ -2,15 +2,18 @@ import Sort from './Sort'
 
 export default class MergeSort implements Sort {
 
+  align: (element: number, index: number) => Promise<void>
   referArray: (index: number) => Promise<number>
   shift: (from: number, to: number) => Promise<void>
   swap: (index1: number, index2: number) => Promise<void>
 
   initialize(
+    align: (element: number, index: number) => Promise<void>,
     referArray: (index: number) => Promise<number>,
     shift: (from: number, to: number) => Promise<void>,
     swap: (index1: number, index2: number) => Promise<void>,
   ) {
+    this.align = align
     this.referArray = referArray
     this.shift = shift
     this.swap = swap
@@ -35,6 +38,8 @@ export default class MergeSort implements Sort {
       if (leftIndex > indexMiddle) {
         const right = await this.referArray(rightIndex)
         cloneNumbers[index - indexMin] = right
+        // meaningless for sort algorithm, for visualize
+        await this.align(right, rightIndex)
         rightIndex++
         index++
         continue
@@ -42,6 +47,8 @@ export default class MergeSort implements Sort {
       if (rightIndex > indexMax) {
         const left = await this.referArray(leftIndex)
         cloneNumbers[index - indexMin] = left
+        // meaningless for sort algorithm, for visualize
+        await this.align(left, leftIndex)
         leftIndex++
         index++
         continue
@@ -51,18 +58,22 @@ export default class MergeSort implements Sort {
       const right = await this.referArray(rightIndex)
       if (left < right) {
         cloneNumbers[index - indexMin] = left
+        // meaningless for sort algorithm, for visualize
+        await this.align(left, leftIndex)
         leftIndex++
         index++
         continue 
       }
       cloneNumbers[index - indexMin] = right
+      // meaningless for sort algorithm, for visualize
+      await this.align(right, rightIndex)
       rightIndex++
       index++
     }
 
     for (let i = indexMin; i <= indexMax; i++) {
       await this.referArray(i)
-      numbers[i] = cloneNumbers[i - indexMin]
+      await this.align(cloneNumbers[i - indexMin], i)
     }
   }
 }

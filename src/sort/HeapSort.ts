@@ -2,6 +2,7 @@ import Sort from './Sort'
 
 export default class HeapSort implements Sort {
 
+  align: (element: number, index: number) => Promise<void>
   referArray: (index: number) => Promise<number>
   shift: (from: number, to: number) => Promise<void>
   swap: (index1: number, index2: number) => Promise<void>
@@ -9,10 +10,12 @@ export default class HeapSort implements Sort {
   heapSize: number
 
   initialize(
+    align: (element: number, index: number) => Promise<void>,
     referArray: (index: number) => Promise<number>,
     shift: (from: number, to: number) => Promise<void>,
     swap: (index1: number, index2: number) => Promise<void>,
   ) {
+    this.align = align
     this.referArray = referArray
     this.shift = shift
     this.swap = swap
@@ -24,7 +27,7 @@ export default class HeapSort implements Sort {
 
     for (let index = numbers.length - 1; index > 0; index--) {
       const max = await this.deleteFromHeap(numbers)
-      numbers[index] = max
+      await this.align(max, index)
     }
   }
 
@@ -49,9 +52,9 @@ export default class HeapSort implements Sort {
   }
 
   async deleteFromHeap(numbers: number[]): Promise<number> {
-    const max = numbers[0]
+    const max = await this.referArray(0)
     this.heapSize--
-    numbers[0] = numbers[this.heapSize]
+    await this.align(await this.referArray(this.heapSize), 0)
     let index = 0
     while (index <= this.heapSize) {
       const leftChildIndex = index * 2 + 1
